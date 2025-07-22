@@ -1,0 +1,269 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+
+import '../../services/api_config.dart';
+
+class EditSupervisorPage extends StatefulWidget {
+  final Map<String, dynamic> data;
+  const EditSupervisorPage({super.key, required this.data});
+  @override
+  State<EditSupervisorPage> createState() => _EditSupervisorPageState();
+}
+
+class _EditSupervisorPageState extends State<EditSupervisorPage> {
+  static const _greenStart = Color(0xff27ae60);
+  static const _greenEnd = Color(0xff219150);
+  static const _bgLight = Color(0xfff0faf2);
+
+  final _form = GlobalKey<FormState>();
+  late final TextEditingController _name, _email, _phone;
+  String? _college;
+  late bool _isRegular, _isTrial, _isDoctor, _isExaminer;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final d = widget.data;
+    _name = TextEditingController(text: d['name']);
+    _email = TextEditingController(text: d['email'] ?? '');
+    _phone = TextEditingController(text: d['phone'] ?? '');
+    _college = d['college'];
+    _isRegular = d['is_regular'] as bool? ?? true;
+    _isTrial = d['is_trial'] as bool? ?? false;
+    _isDoctor = d['is_doctor'] as bool? ?? false;
+    _isExaminer = d['is_examiner'] as bool? ?? false;
+  }
+
+  Future<void> _save() async {
+    if (!_form.currentState!.validate()) return;
+    setState(() => _busy = true);
+    final token =
+        (await SharedPreferences.getInstance()).getString('token') ?? '';
+    try {
+      await Dio().put(
+        '${ApiConfig.baseUrl}/supervisors/${widget.data['id']}',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        data: {
+          'name': _name.text.trim(),
+          'email': _email.text.trim(),
+          'phone': _phone.text.trim(),
+          'college': _college,
+          'is_regular': _isRegular,
+          'is_trial': _isTrial,
+          'is_doctor': _isDoctor,
+          'is_examiner': _isExaminer,
+        },
+      );
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } on DioException catch (e) {
+      final m = e.response?.data['message'] ?? 'فشل التعديل';
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Widget _field(
+    String lbl,
+    TextEditingController ctrl, {
+    TextInputType? kb,
+    bool req = true,
+  }) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: TextFormField(
+      controller: ctrl,
+      keyboardType: kb,
+      validator: (v) =>
+          !req || (v != null && v.trim().isNotEmpty) ? null : 'مطلوب',
+      decoration: InputDecoration(
+        labelText: lbl,
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+    ),
+  );
+
+  Widget _ddCollege() => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: DropdownButtonFormField<String>(
+      value: _college,
+      decoration: const InputDecoration(
+        labelText: 'المجمّع',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+      items: const [
+        DropdownMenuItem(value: 'Engineering', child: Text('Engineering')),
+        DropdownMenuItem(value: 'Medical', child: Text('Medical')),
+        DropdownMenuItem(value: 'Sharia', child: Text('Sharia')),
+      ],
+      validator: (v) => v == null ? 'مطلوب' : null,
+      onChanged: (v) => setState(() => _college = v),
+    ),
+  );
+
+  Widget _switchTile(String lbl, bool val, ValueChanged<bool> on) =>
+      SwitchListTile(
+        title: Text(lbl),
+        value: val,
+        onChanged: on,
+        activeColor: _greenStart,
+      );
+
+  @override
+  Widget build(BuildContext ctx) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [_greenStart, _greenEnd],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // ─── HEADER ───
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [_greenStart, _greenEnd],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(24),
+                  ),
+                ),
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      PositionedDirectional(
+                        start: 8,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ),
+                      const Text(
+                        'تعديل مشرف',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // ─── FORM WITH ANIMATIONS ───
+              Expanded(
+                child: Container(
+                  color: _bgLight,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Form(
+                    key: _form,
+                    child: AnimationLimiter(
+                      child: ListView(
+                        physics: const BouncingScrollPhysics(),
+                        children: AnimationConfiguration.toStaggeredList(
+                          duration: const Duration(milliseconds: 600),
+                          childAnimationBuilder: (w) => SlideAnimation(
+                            verticalOffset: 50,
+                            child: FadeInAnimation(child: w),
+                          ),
+                          children: [
+                            _field('اسم المشرف', _name),
+                            _field(
+                              'البريد الإلكتروني',
+                              _email,
+                              kb: TextInputType.emailAddress,
+                              req: false,
+                            ),
+                            _field(
+                              'الهاتف',
+                              _phone,
+                              kb: TextInputType.phone,
+                              req: false,
+                            ),
+                            _ddCollege(),
+                            const Divider(height: 32),
+                            _switchTile(
+                              'متابعة أسبوعية فقط',
+                              _isRegular,
+                              (v) => setState(() => _isRegular = v),
+                            ),
+                            _switchTile(
+                              'مختص للتجريبي',
+                              _isTrial,
+                              (v) => setState(() => _isTrial = v),
+                            ),
+                            _switchTile(
+                              'دكتور (رسمي)',
+                              _isDoctor,
+                              (v) => setState(() => _isDoctor = v),
+                            ),
+                            _switchTile(
+                              'ممتحن أجزاء',
+                              _isExaminer,
+                              (v) => setState(() => _isExaminer = v),
+                            ),
+                            const SizedBox(height: 28),
+                            SizedBox(
+                              height: 48,
+                              child: ElevatedButton(
+                                onPressed: _busy ? null : _save,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _greenStart,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: _busy
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                    : const Text(
+                                        'حفظ التعديلات',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

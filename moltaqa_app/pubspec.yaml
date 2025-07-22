@@ -1,0 +1,51 @@
+name: moltaqa_app
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # خط عربي جميل
+  google_fonts: ^5.0.17
+
+  # أيقونات فونت أوسوم
+  font_awesome_flutter: ^10.4.0
+
+  # حزمة أيقونات Material Design (بما في ذلك MdiIcons.prayingHands)
+  material_design_icons_flutter: ^7.0.7296
+
+  # رسّات الكونفيتي للاحتفال عند الانتهاء
+  confetti: ^0.6.0
+
+  # دعم الرسوم المتحركة للبطاقات
+  flutter_staggered_animations: ^1.1.0
+
+  # دعم التوطين
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+
+  cupertino_icons: ^1.0.2
+  dio: ^5.4.0
+  shared_preferences: ^2.2.2
+
+  # حزمة المشاركة
+  share_plus: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/logo1.png
+    - assets/image.png
