@@ -1,0 +1,80 @@
+name: moltaqa_app
+description: "A new Flutter project."
+publish_to: none          # مشروع خاص
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+###############################################################################
+# Dependencies
+###############################################################################
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # HTTP client
+  dio: ^5.4.2
+
+  # تخزين محلي بسيط
+  shared_preferences: ^2.2.2
+
+  # فتح عناوين URL
+  url_launcher: ^6.2.4
+
+  # التعامل مع المسارات ثم فتح الملفات ــ لازمة لِـ Certificates
+  path_provider: ^2.1.2
+  open_file: ^3.3.2
+
+  # خطوط Google – يدعم الخطوط العربية
+  google_fonts: ^6.0.0
+
+  # أيقونات
+  font_awesome_flutter: ^10.7.0
+  material_design_icons_flutter: ^7.0.7296
+
+  # بطاقات و عناصر متحرّكة
+  flutter_staggered_animations: ^1.1.1
+
+  # مؤثرات الكونفيتي
+  confetti: ^0.7.0
+
+  # مشاركة (Share)
+  share_plus: ^7.2.1
+
+  # التوطين
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+
+  # عرض ومعالجة PDF للشهادات (يدعم Web + Mobile + Desktop)
+  pdfx: ^2.9.0
+
+  # لدعم registerViewFactory على الويب
+  flutter_web_plugins:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.6
+
+###############################################################################
+# Dev‑dependencies
+###############################################################################
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+###############################################################################
+# Flutter section
+###############################################################################
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/logo1.png
+    - assets/image.png
+    - assets/logo2.jpg
